@@ -1,32 +1,69 @@
 const Part = require('../models/Part');
-const PartOption = require('../models/PartOption');
-const CombinationRule = require('../models/CombinationRule');
-const PriceRule = require('../models/PriceRule');
+const Product = require('../models/Product');
+const BaseController = require('./baseController');
 
-exports.getPartsWithOptions = async (req, res) => {
-  try {
-    const parts = await Part.find().populate('options');
-    res.status(200).json(parts);
-  } catch (error) {
-    console.log(error.message);
-    res.status(500).send(error.message);
+class SharedController extends BaseController {
+  /**
+   * Retrieves parts with available options for a given product.
+   * @param {Object} req - The request object.
+   * @returns {Object} - The response object with status and data.
+   */
+  async getPartsWithAvailableOptions(req, res) {
+    const productId = req.query.productId;
+    const product = await Product.findById(productId).populate('parts');
+    if (!product) return { status: 404, data: 'Product not found' };
+    const parts = await Part.find({ _id: { $in: product.parts } }).populate({
+      path: 'options',
+      match: { available: true }
+    });
+    return { status: 200, data: parts };
   }
-};
 
-exports.getCombinationRules = async (req, res) => {
-  try {
-    const rules = await CombinationRule.find().populate('partOptions');
-    res.status(200).json(rules);
-  } catch (error) {
-    res.status(500).send(error.message);
+  /**
+   * Retrieves combination rules for a given product.
+   * @param {Object} req - The request object.
+   * @returns {Object} - The response object with status and data.
+   */
+  async getCombinationRules(req, res) {
+    const productId = req.query.productId;
+    const product = await Product.findById(productId).populate({
+      path: 'rules.combinationRules',
+      populate: {
+        path: 'partOptions',
+        model: 'PartOption'
+      }
+    });
+    if (!product) return { status: 404, data: 'Product not found' };
+    return { status: 200, data: product.rules.combinationRules };
   }
-};
 
-exports.getPriceRules = async (req, res) => {
-  try {
-    const rules = await PriceRule.find().populate('partOptions');
-    res.status(200).json(rules);
-  } catch (error) {
-    res.status(500).send(error.message);
+  /**
+   * Retrieves price rules for a given product.
+   * @param {Object} req - The request object.
+   * @returns {Object} - The response object with status and data.
+   */
+  async getPriceRules(req, res) {
+    const productId = req.query.productId;
+    const product = await Product.findById(productId).populate({
+      path: 'rules.priceRules',
+      populate: {
+        path: 'partOptions',
+        model: 'PartOption'
+      }
+    });
+    if (!product) return { status: 404, data: 'Product not found' };
+    return { status: 200, data: product.rules.priceRules };
   }
-};
+
+  /**
+   * Retrieves all available products.
+   * @param {Object} req - The request object.
+   * @returns {Object} - The response object with status and data.
+   */
+  async getAvailableProducts(req, res) {
+    const products = await Product.find({ available: true }).populate('parts');
+    return { status: 200, data: products };
+  }
+}
+
+module.exports = new SharedController();

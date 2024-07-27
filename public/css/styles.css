@@ -1,0 +1,46 @@
+header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+body {
+    padding-top: 70px;
+}
+
+.selected {
+    font-weight: bold;
+}
+
+.navbar-nav {
+    flex: 1;
+    justify-content: center;
+}
+
+.navbar-brand {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+@media (max-width: 992px) {
+    .navbar-brand {
+        position: static;
+        transform: none;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+.btn-custom-outline {
+    color: #ff355e;
+    background-color: white;
+    border: 2px solid #ff355e;
+}
+
+.btn-custom-outline:hover {
+    color: white;
+    background-color: #ff355e;
+    border-color: #ff355e;
+}

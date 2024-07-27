@@ -2,130 +2,229 @@ const Part = require('../models/Part');
 const PartOption = require('../models/PartOption');
 const CombinationRule = require('../models/CombinationRule');
 const PriceRule = require('../models/PriceRule');
+const Product = require('../models/Product');
+const BaseController = require('./baseController');
 
-exports.createPart = async (req, res) => {
-  try {
+class AdminController extends BaseController {
+  /**
+   * Retrieves parts with all their options for a given product.
+   * @param {Object} req - The request object.
+   * @returns {Object} - The response object with status and data.
+   */
+  async getPartsWithAllOptions(req) {
+    const productId = req.query.productId;
+    const product = await Product.findById(productId).populate('parts');
+    if (!product) return { status: 404, data: 'Product not found' };
+    const parts = await Part.find({ _id: { $in: product.parts } }).populate('options');
+    return { status: 200, data: parts };
+  }
+
+  /**
+   * Creates a new part.
+   * @param {Object} req - The request object.
+   * @returns {Object} - The response object with status and data.
+   */
+  async createPart(req) {
     const part = new Part(req.body);
     await part.save();
-    res.status(201).json(part);
-  } catch (error) {
-    res.status(500).send(error.message);
+    if (req.body.productIds && req.body.productIds.length > 0) {
+      await Product.updateMany(
+        { _id: { $in: req.body.productIds } },
+        { $push: { parts: part._id } }
+      );
+    }
+    return { status: 201, data: part };
   }
-};
 
-exports.updatePart = async (req, res) => {
-  try {
+  /**
+   * Updates an existing part.
+   * @param {Object} req - The request object.
+   * @returns {Object} - The response object with status and data.
+   */
+  async updatePart(req) {
     const part = await Part.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!part) return res.status(404).send('Part not found');
-    res.status(200).json(part);
-  } catch (error) {
-    res.status(500).send(error.message);
+    if (!part) return { status: 404, data: 'Part not found' };
+    if (req.body.productIds && req.body.productIds.length > 0) {
+      await Product.updateMany(
+        { parts: part._id },
+        { $pull: { parts: part._id } }
+      );
+      await Product.updateMany(
+        { _id: { $in: req.body.productIds } },
+        { $push: { parts: part._id } }
+      );
+    }
+    return { status: 200, data: part };
   }
-};
 
-exports.deletePart = async (req, res) => {
-  try {
+  /**
+   * Deletes an existing part.
+   * @param {Object} req - The request object.
+   * @returns {Object} - The response object with status and data.
+   */
+  async deletePart(req) {
     const part = await Part.findByIdAndDelete(req.params.id);
-    if (!part) return res.status(404).send('Part not found');
-    res.status(204).send();
-  } catch (error) {
-    res.status(500).send(error.message);
+    if (!part) return { status: 404, data: 'Part not found' };
+    return { status: 204, data: null };
   }
-};
 
-exports.createPartOption = async (req, res) => {
-  try {
+  /**
+   * Creates a new part option.
+   * @param {Object} req - The request object.
+   * @returns {Object} - The response object with status and data.
+   */
+  async createPartOption(req) {
     const partOption = new PartOption(req.body);
     await partOption.save();
-    
     await Part.findByIdAndUpdate(partOption.part, { $push: { options: partOption._id } });
-    
-    res.status(201).json(partOption);
-  } catch (error) {
-    console.log(error.message);
-    res.status(500).send(error.message);
+    return { status: 201, data: partOption };
   }
-};
 
-exports.updatePartOption = async (req, res) => {
-  try {
+  /**
+   * Updates an existing part option.
+   * @param {Object} req - The request object.
+   * @returns {Object} - The response object with status and data.
+   */
+  async updatePartOption(req) {
     const partOption = await PartOption.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!partOption) return res.status(404).send('PartOption not found');
-    res.status(200).json(partOption);
-  } catch (error) {
-    res.status(500).send(error.message);
+    if (!partOption) return { status: 404, data: 'PartOption not found' };
+    return { status: 200, data: partOption };
   }
-};
 
-exports.deletePartOption = async (req, res) => {
-  try {
+  /**
+   * Deletes an existing part option.
+   * @param {Object} req - The request object.
+   * @returns {Object} - The response object with status and data.
+   */
+  async deletePartOption(req) {
     const partOption = await PartOption.findByIdAndDelete(req.params.id);
-    if (!partOption) return res.status(404).send('PartOption not found');
-    
+    if (!partOption) return { status: 404, data: 'PartOption not found' };
     await Part.findByIdAndUpdate(partOption.part, { $pull: { options: partOption._id } });
-    
-    res.status(204).send();
-  } catch (error) {
-    res.status(500).send(error.message);
+    return { status: 204, data: null };
   }
-};
 
-exports.createCombinationRule = async (req, res) => {
-  try {
+  /**
+   * Creates a new combination rule.
+   * @param {Object} req - The request object.
+   * @returns {Object} - The response object with status and data.
+   */
+  async createCombinationRule(req) {
     const combinationRule = new CombinationRule(req.body);
     await combinationRule.save();
-    res.status(201).json(combinationRule);
-  } catch (error) {
-    res.status(500).send(error.message);
+    await Product.findByIdAndUpdate(req.body.productId, {
+      $push: { 'rules.combinationRules': combinationRule._id }
+    });
+    return { status: 201, data: combinationRule };
   }
-};
 
-exports.updateCombinationRule = async (req, res) => {
-  try {
+  /**
+   * Updates an existing combination rule.
+   * @param {Object} req - The request object.
+   * @returns {Object} - The response object with status and data.
+   */
+  async updateCombinationRule(req) {
     const combinationRule = await CombinationRule.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!combinationRule) return res.status(404).send('CombinationRule not found');
-    res.status(200).json(combinationRule);
-  } catch (error) {
-    res.status(500).send(error.message);
+    if (!combinationRule) return { status: 404, data: 'CombinationRule not found' };
+    return { status: 200, data: combinationRule };
   }
-};
 
-exports.deleteCombinationRule = async (req, res) => {
-  try {
+  /**
+   * Deletes an existing combination rule.
+   * @param {Object} req - The request object.
+   * @returns {Object} - The response object with status and data.
+   */
+  async deleteCombinationRule(req) {
     const combinationRule = await CombinationRule.findByIdAndDelete(req.params.id);
-    if (!combinationRule) return res.status(404).send('CombinationRule not found');
-    res.status(204).send();
-  } catch (error) {
-    res.status(500).send(error.message);
+    if (!combinationRule) return { status: 404, data: 'CombinationRule not found' };
+    await Product.updateMany(
+      { 'rules.combinationRules': combinationRule._id },
+      { $pull: { 'rules.combinationRules': combinationRule._id } }
+    );
+    return { status: 204, data: null };
   }
-};
 
-exports.createPriceRule = async (req, res) => {
-  try {
+  /**
+   * Creates a new price rule.
+   * @param {Object} req - The request object.
+   * @returns {Object} - The response object with status and data.
+   */
+  async createPriceRule(req) {
     const priceRule = new PriceRule(req.body);
     await priceRule.save();
-    res.status(201).json(priceRule);
-  } catch (error) {
-    res.status(500).send(error.message);
+    await Product.findByIdAndUpdate(req.body.productId, {
+      $push: { 'rules.priceRules': priceRule._id }
+    });
+    return { status: 201, data: priceRule };
   }
-};
 
-exports.updatePriceRule = async (req, res) => {
-  try {
+  /**
+   * Updates an existing price rule.
+   * @param {Object} req - The request object.
+   * @returns {Object} - The response object with status and data.
+   */
+  async updatePriceRule(req) {
     const priceRule = await PriceRule.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!priceRule) return res.status(404).send('PriceRule not found');
-    res.status(200).json(priceRule);
-  } catch (error) {
-    res.status(500).send(error.message);
+    if (!priceRule) return { status: 404, data: 'PriceRule not found' };
+    return { status: 200, data: priceRule };
   }
-};
 
-exports.deletePriceRule = async (req, res) => {
-  try {
+  /**
+   * Deletes an existing price rule.
+   * @param {Object} req - The request object.
+   * @returns {Object} - The response object with status and data.
+   */
+  async deletePriceRule(req) {
     const priceRule = await PriceRule.findByIdAndDelete(req.params.id);
-    if (!priceRule) return res.status(404).send('PriceRule not found');
-    res.status(204).send();
-  } catch (error) {
-    res.status(500).send(error.message);
+    if (!priceRule) return { status: 404, data: 'PriceRule not found' };
+    await Product.updateMany(
+      { 'rules.priceRules': priceRule._id },
+      { $pull: { 'rules.priceRules': priceRule._id } }
+    );
+    return { status: 204, data: null };
   }
-};
+
+  /**
+   * Creates a new product.
+   * @param {Object} req - The request object.
+   * @returns {Object} - The response object with status and data.
+   */
+  async createProduct(req) {
+    const product = new Product(req.body);
+    await product.save();
+    return { status: 201, data: product };
+  }
+
+  /**
+   * Updates an existing product.
+   * @param {Object} req - The request object.
+   * @returns {Object} - The response object with status and data.
+   */
+  async updateProduct(req) {
+    const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!product) return { status: 404, data: 'Product not found' };
+    return { status: 200, data: product };
+  }
+
+  /**
+   * Retrieves all products.
+   * @param {Object} req - The request object.
+   * @returns {Object} - The response object with status and data.
+   */
+  async getAllProducts(req) {
+    const products = await Product.find();
+    return { status: 200, data: products };
+  }
+
+  /**
+   * Deletes an existing product.
+   * @param {Object} req - The request object.
+   * @returns {Object} - The response object with status and data.
+   */
+  async deleteProduct(req) {
+    const product = await Product.findByIdAndDelete(req.params.id);
+    if (!product) return { status: 404, data: 'Product not found' };
+    return { status: 204, data: null };
+  }
+}
+
+module.exports = new AdminController();
