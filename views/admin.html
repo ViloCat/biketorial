@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biketorial - Admin</title>
+    <script defer src="js/admin.js"></script>
+</head>
+<body>
+    <h1>Admin Panel</h1>
+    
+    <h2>Manage Parts</h2>
+    <form id="part-form">
+        <input type="hidden" id="part-id">
+        <label>Name: <input type="text" id="part-name" required></label>
+        <label>Description: <input type="text" id="part-description"></label>
+        <button type="submit">Save Part</button>
+    </form>
+    <div id="parts-list"></div>
+
+    <h2>Manage Part Options</h2>
+    <form id="part-option-form">
+        <input type="hidden" id="part-option-id">
+        <label>Part: <select id="part-option-part" required></select></label>
+        <label>Name: <input type="text" id="part-option-name" required></label>
+        <label>Description: <input type="text" id="part-option-description"></label>
+        <label>Cost: <input type="number" id="part-option-cost" required></label>
+        <button type="submit">Save Part Option</button>
+    </form>
+    <div id="part-options-list"></div>
+
+    <h2>Manage Combination Rules</h2>
+    <form id="combination-rule-form">
+        <input type="hidden" id="combination-rule-id">
+        <label>Part Options: <select id="combination-rule-part-options" multiple required></select></label>
+        <label>Condition: 
+            <select id="combination-rule-condition" required>
+                <option value="forbidden">Forbidden</option>
+            </select>
+        </label>
+        <button type="submit">Save Combination Rule</button>
+    </form>
+    <div id="combination-rules-list"></div>
+
+    <h2>Manage Price Rules</h2>
+    <form id="price-rule-form">
+        <input type="hidden" id="price-rule-id">
+        <label>Part Options: <select id="price-rule-part-options" multiple required></select></label>
+        <label>Modified Price: <input type="number" id="price-rule-modified-price" required></label>
+        <button type="submit">Save Price Rule</button>
+    </form>
+    <div id="price-rules-list"></div>
+</body>
+</html>
