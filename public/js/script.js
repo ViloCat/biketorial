@@ -6,6 +6,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const submitButton = document.getElementById('submit-button');
     const navbar = document.getElementById('navbar');
     const productDropdown = document.getElementById('productDropdown');
+    const addToCartButton = document.getElementById('submit-button');
+    const placeOrderButton = document.getElementById('place-order-btn');
+    const cartItemsContainer = document.getElementById('cart-items');
+    const cartCountElement = document.getElementById('cart-count');
+    const cartTotalPriceElement = document.getElementById('cart-total-price');
+    const emptyCartButton = document.getElementById('empty-cart-btn');
+    const orderForm = document.getElementById('order-form');
+
     let combinationRules = [];
     let priceRules = [];
     let partOptions = [];
@@ -60,9 +68,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         partOptions = [];
 
         if (parts.length === 0) {
-            document.getElementById('order-form').style.display = 'none';
+            orderForm.style.display = 'none';
         } else {
-            document.getElementById('order-form').style.display = 'block';
+            orderForm.style.display = 'block';
         }
 
         parts.forEach(part => {
@@ -183,15 +191,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         return isValid;
     };
 
-    await fetchProducts();
-    await fetchParts();
-
-    const addToCartButton = document.getElementById('submit-button');
-    const placeOrderButton = document.getElementById('place-order-btn');
-    const cartItemsContainer = document.getElementById('cart-items');
-    const cartCountElement = document.getElementById('cart-count');
-    const cartTotalPriceElement = document.getElementById('cart-total-price');
-
     const fetchCart = async () => {
         const response = await fetch('/customer/order/in_cart');
         if (response.ok) {
@@ -199,8 +198,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (order.status != 'not_found') {
                 updateCartUI(order);
             } else {
-                document.getElementById('empty-cart-btn').style.display = 'none';
-                document.getElementById('place-order-btn').disabled = true;
+                emptyCartButton.style.display = 'none';
+                placeOrderButton.disabled = true;
             }
         }
     };
@@ -222,8 +221,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         cartCountElement.textContent = order.items.length;
         cartTotalPriceElement.textContent = order.totalPrice.toFixed(2);
 
-        const emptyCartButton = document.getElementById('empty-cart-btn');
-        const placeOrderButton = document.getElementById('place-order-btn');
         if (order.items.length > 0) {
             emptyCartButton.style.display = 'block';
             placeOrderButton.disabled = false;
@@ -275,8 +272,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    const emptyCartButton = document.getElementById('empty-cart-btn');
-
     emptyCartButton.addEventListener('click', async () => {
         const response = await fetch('/customer/order/empty', {
             method: 'DELETE'
@@ -291,5 +286,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
+    await fetchProducts();
+    await fetchParts();
     await fetchCart();
 });

@@ -2,19 +2,48 @@ document.addEventListener('DOMContentLoaded', async () => {
     const partsList = document.getElementById('parts-list');
     const partForm = document.getElementById('part-form');
     const partOptionForm = document.getElementById('part-option-form');
-    
     const combinationRuleForm = document.getElementById('combination-rule-form');
     const combinationRulesList = document.getElementById('combination-rules-list');
-
     const priceRuleForm = document.getElementById('price-rule-form');
     const priceRulesList = document.getElementById('price-rules-list');
-
     const productForm = document.getElementById('product-form');
     const navbar = document.getElementById('navbar');
     const productDropdown = document.getElementById('productDropdown');
     const managePartsSection = document.getElementById('manage-parts-section');
     const manageCombinationRulesSection = document.getElementById('manage-combination-rules-section');
     const managePriceRulesSection = document.getElementById('manage-price-rules-section');
+    const editProductBtn = document.getElementById('editProductBtn');
+    const productModalLabel = document.getElementById('productModalLabel');
+    const deleteProductBtn = document.getElementById('deleteProductBtn');
+    const partModalLabel = document.getElementById('partModalLabel');
+    const partOptionModalLabel = document.getElementById('partOptionModalLabel');
+    const deletePartOptionBtn = document.getElementById('deletePartOptionBtn');
+    const combinationRuleModalLabel = document.getElementById('combinationRuleModalLabel');
+    const deleteCombinationRuleBtn = document.getElementById('deleteCombinationRuleBtn');
+    const priceRuleModalLabel = document.getElementById('priceRuleModalLabel');
+    const deletePriceRuleBtn = document.getElementById('deletePriceRuleBtn');
+    const selectedProductName = document.getElementById('selected-product-name');
+    const selectedProductDescription = document.getElementById('selected-product-description');
+    const selectedProductAvailability = document.getElementById('selected-product-availability');
+    const partIdInput = document.getElementById('part-id');
+    const partNameInput = document.getElementById('part-name');
+    const partDescriptionInput = document.getElementById('part-description');
+    const partOptionIdInput = document.getElementById('part-option-id');
+    const partOptionPartInput = document.getElementById('part-option-part');
+    const partOptionNameInput = document.getElementById('part-option-name');
+    const partOptionDescriptionInput = document.getElementById('part-option-description');
+    const partOptionCostInput = document.getElementById('part-option-cost');
+    const combinationRuleIdInput = document.getElementById('combination-rule-id');
+    const combinationRulePartOptionsSelect = document.querySelector('#combination-rule-form #partOptions');
+    const combinationRuleConditionSelect = document.getElementById('condition');
+    const priceRuleIdInput = document.getElementById('price-rule-id');
+    const priceRulePartOptionsSelect = document.querySelector('#price-rule-form #partOptions');
+    const priceRuleModifiedPriceInput = document.getElementById('modifiedPrice');
+    const productIdInput = document.getElementById('product-id');
+    const productNameInput = document.getElementById('product-name');
+    const productDescriptionInput = document.getElementById('product-description');
+    const productAvailableCheckbox = document.getElementById('product-available');
+    const productAvailableLabel = document.getElementById('product-available-label');
 
     let parts = [];
     let products = [];
@@ -39,8 +68,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 fetchCombinationRules();
                 fetchPriceRules();
                 updateNavbarSelection(product._id);
-                document.getElementById('editProductBtn').style.display = 'block';
-                document.getElementById('editProductBtn').disabled = false;
+                editProductBtn.style.display = 'block';
+                editProductBtn.disabled = false;
                 managePartsSection.classList.remove('d-none');
                 manageCombinationRulesSection.classList.remove('d-none');
                 managePriceRulesSection.classList.remove('d-none');
@@ -53,8 +82,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         addProductOption.classList.add('dropdown-item');
         addProductOption.textContent = '+ Add Product';
         addProductOption.addEventListener('click', () => {
-            document.getElementById('productModalLabel').textContent = 'Add Product';
-            document.getElementById('deleteProductBtn').style.display = 'none';
+            productModalLabel.textContent = 'Add Product';
+            deleteProductBtn.style.display = 'none';
             productForm.reset();
             new bootstrap.Modal(document.getElementById('productModal')).show();
         });
@@ -65,15 +94,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         const selectedProduct = products.find(p => p._id === productId);
         if (selectedProduct) {
             productDropdown.textContent = selectedProduct.name;
-            document.getElementById('selected-product-name').textContent = selectedProduct.name;
-            document.getElementById('selected-product-description').textContent = selectedProduct.description;
-            const availabilityText = document.getElementById('selected-product-availability');
-            availabilityText.textContent = selectedProduct.available ? 'Available' : 'Unavailable';
+            selectedProductName.textContent = selectedProduct.name;
+            selectedProductDescription.textContent = selectedProduct.description;
+            selectedProductAvailability.textContent = selectedProduct.available ? 'Available' : 'Unavailable';
         } else {
             productDropdown.textContent = 'Products';
-            document.getElementById('selected-product-name').textContent = '';
-            document.getElementById('selected-product-description').textContent = '';
-            document.getElementById('selected-product-availability').textContent = '';
+            selectedProductName.textContent = '';
+            selectedProductDescription.textContent = '';
+            selectedProductAvailability.textContent = '';
         }
         const links = navbar.querySelectorAll('a');
         links.forEach(link => {
@@ -129,9 +157,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     const populatePartOptions = () => {
-        const combinationRulePartOptionsSelect = document.querySelector('#combination-rule-form #partOptions');
-        const priceRulePartOptionsSelect = document.querySelector('#price-rule-form #partOptions');
-
         combinationRulePartOptionsSelect.innerHTML = '';
         priceRulePartOptionsSelect.innerHTML = '';
 
@@ -241,9 +266,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     partForm.addEventListener('submit', async (event) => {
         event.preventDefault();
-        const id = document.getElementById('part-id').value;
-        const name = document.getElementById('part-name').value;
-        const description = document.getElementById('part-description').value;
+        const id = partIdInput.value;
+        const name = partNameInput.value;
+        const description = partDescriptionInput.value;
 
         if (id) {
             await fetch(`/admin/parts/${id}`, {
@@ -270,12 +295,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     partOptionForm.addEventListener('submit', async (event) => {
         event.preventDefault();
-        const id = document.getElementById('part-option-id').value;
-        const part = document.getElementById('part-option-part').value;
-        const name = document.getElementById('part-option-name').value;
-        const description = document.getElementById('part-option-description').value;
-        const cost = document.getElementById('part-option-cost').value;
-    
+        const id = partOptionIdInput.value;
+        const part = partOptionPartInput.value;
+        const name = partOptionNameInput.value;
+        const description = partOptionDescriptionInput.value;
+        const cost = partOptionCostInput.value;
+
         if (id) {
             await fetch(`/admin/part-options/${id}`, {
                 method: 'PUT',
@@ -293,14 +318,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 body: JSON.stringify({ part, name, description, cost, available: false })
             });
         }
-    
+
         partOptionForm.reset();
         fetchParts();
         bootstrap.Modal.getInstance(document.getElementById('partOptionModal')).hide();
     });
 
-    document.getElementById('deletePartOptionBtn').addEventListener('click', async () => {
-        const id = document.getElementById('part-option-id').value;
+    deletePartOptionBtn.addEventListener('click', async () => {
+        const id = partOptionIdInput.value;
         if (id) {
             await fetch(`/admin/part-options/${id}`, { method: 'DELETE' });
             partOptionForm.reset();
@@ -311,9 +336,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     combinationRuleForm.addEventListener('submit', async (event) => {
         event.preventDefault();
-        const id = document.getElementById('combination-rule-id').value;
-        const partOptions = Array.from(document.querySelector('#combination-rule-form #partOptions').selectedOptions).map(option => option.value);
-        const condition = document.getElementById('condition').value;
+        const id = combinationRuleIdInput.value;
+        const partOptions = Array.from(combinationRulePartOptionsSelect.selectedOptions).map(option => option.value);
+        const condition = combinationRuleConditionSelect.value;
         const productId = selectedProductId;
 
         if (id) {
@@ -341,9 +366,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     priceRuleForm.addEventListener('submit', async (event) => {
         event.preventDefault();
-        const id = document.getElementById('price-rule-id').value;
-        const partOptions = Array.from(document.querySelector('#price-rule-form #partOptions').selectedOptions).map(option => option.value);
-        const modifiedPrice = document.getElementById('modifiedPrice').value;
+        const id = priceRuleIdInput.value;
+        const partOptions = Array.from(priceRulePartOptionsSelect.selectedOptions).map(option => option.value);
+        const modifiedPrice = priceRuleModifiedPriceInput.value;
         const productId = selectedProductId;
 
         if (id) {
@@ -370,18 +395,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     window.editProduct = (id, name, description, available) => {
-        document.getElementById('product-id').value = id;
-        document.getElementById('product-name').value = name;
-        document.getElementById('product-description').value = description;
-        const productAvailableCheckbox = document.getElementById('product-available');
+        productIdInput.value = id;
+        productNameInput.value = name;
+        productDescriptionInput.value = description;
         productAvailableCheckbox.checked = available;
-        document.getElementById('product-available-label').textContent = available ? 'Available' : 'Unavailable';
+        productAvailableLabel.textContent = available ? 'Available' : 'Unavailable';
         productAvailableCheckbox.addEventListener('change', () => {
-            document.getElementById('product-available-label').textContent = productAvailableCheckbox.checked ? 'Available' : 'Unavailable';
+            productAvailableLabel.textContent = productAvailableCheckbox.checked ? 'Available' : 'Unavailable';
         });
-        document.getElementById('editProductBtn').disabled = false;
-        document.getElementById('productModalLabel').textContent = 'Edit Product';
-        document.getElementById('deleteProductBtn').style.display = 'block';
+        editProductBtn.disabled = false;
+        productModalLabel.textContent = 'Edit Product';
+        deleteProductBtn.style.display = 'block';
         new bootstrap.Modal(document.getElementById('productModal')).show();
     };
 
@@ -391,9 +415,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     window.editPart = (id, name, description) => {
-        document.getElementById('part-id').value = id;
-        document.getElementById('part-name').value = name;
-        document.getElementById('part-description').value = description;
+        partIdInput.value = id;
+        partNameInput.value = name;
+        partDescriptionInput.value = description;
     };
 
     window.deletePart = async (id) => {
@@ -402,11 +426,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     window.editPartOption = (id, part, name, description, cost) => {
-        document.getElementById('part-option-id').value = id;
-        document.getElementById('part-option-part').value = part;
-        document.getElementById('part-option-name').value = name;
-        document.getElementById('part-option-description').value = description;
-        document.getElementById('part-option-cost').value = cost;
+        partOptionIdInput.value = id;
+        partOptionPartInput.value = part;
+        partOptionNameInput.value = name;
+        partOptionDescriptionInput.value = description;
+        partOptionCostInput.value = cost;
     };
 
     window.deletePartOption = async (id) => {
@@ -415,42 +439,42 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     window.editCombinationRule = (id, partOptions, condition) => {
-        document.getElementById('combination-rule-id').value = id;
-        Array.from(document.getElementById('combination-rule-form').querySelectorAll('#partOptions option')).forEach(option => {
+        combinationRuleIdInput.value = id;
+        Array.from(combinationRulePartOptionsSelect.querySelectorAll('option')).forEach(option => {
             option.selected = partOptions.split(',').includes(option.value);
         });
-        document.getElementById('condition').value = condition;
-        document.getElementById('combinationRuleModalLabel').textContent = 'Edit Combination Rule';
-        document.getElementById('deleteCombinationRuleBtn').style.display = 'block';
+        combinationRuleConditionSelect.value = condition;
+        combinationRuleModalLabel.textContent = 'Edit Combination Rule';
+        deleteCombinationRuleBtn.style.display = 'block';
         new bootstrap.Modal(document.getElementById('combinationRuleModal')).show();
     };
 
-    document.getElementById('deleteCombinationRuleBtn').addEventListener('click', async () => {
-        const id = document.getElementById('combination-rule-id').value;
+    deleteCombinationRuleBtn.addEventListener('click', async () => {
+        const id = combinationRuleIdInput.value;
         await fetch(`/admin/combination-rules/${id}`, { method: 'DELETE' });
         await fetchCombinationRules();
         bootstrap.Modal.getInstance(document.getElementById('combinationRuleModal')).hide();
     });
 
     window.editPriceRule = (id, partOptions, modifiedPrice) => {
-        document.getElementById('price-rule-id').value = id;
-        Array.from(document.getElementById('price-rule-form').querySelectorAll('#partOptions option')).forEach(option => {
+        priceRuleIdInput.value = id;
+        Array.from(priceRulePartOptionsSelect.querySelectorAll('option')).forEach(option => {
             option.selected = partOptions.split(',').includes(option.value);
         });
-        document.getElementById('modifiedPrice').value = modifiedPrice;
-        document.getElementById('priceRuleModalLabel').textContent = 'Edit Price Rule';
-        document.getElementById('deletePriceRuleBtn').style.display = 'block';
+        priceRuleModifiedPriceInput.value = modifiedPrice;
+        priceRuleModalLabel.textContent = 'Edit Price Rule';
+        deletePriceRuleBtn.style.display = 'block';
         new bootstrap.Modal(document.getElementById('priceRuleModal')).show();
     };
 
-    document.getElementById('deletePriceRuleBtn').addEventListener('click', async () => {
-        const id = document.getElementById('price-rule-id').value;
+    deletePriceRuleBtn.addEventListener('click', async () => {
+        const id = priceRuleIdInput.value;
         await fetch(`/admin/price-rules/${id}`, { method: 'DELETE' });
         await fetchPriceRules();
         bootstrap.Modal.getInstance(document.getElementById('priceRuleModal')).hide();
     });
 
-    document.getElementById('editProductBtn').addEventListener('click', () => {
+    editProductBtn.addEventListener('click', () => {
         const selectedProduct = products.find(p => p._id === selectedProductId);
         if (selectedProduct) {
             editProduct(selectedProduct._id, selectedProduct.name, selectedProduct.description, selectedProduct.available);
@@ -458,9 +482,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     document.getElementById('addPartBtn').addEventListener('click', () => {
-        document.getElementById('part-id').value = '';
-        document.getElementById('partModalLabel').textContent = 'Add Part';
-        document.getElementById('part-form').reset();
+        partIdInput.value = '';
+        partModalLabel.textContent = 'Add Part';
+        partForm.reset();
         new bootstrap.Modal(document.getElementById('partModal')).show();
     });
 
@@ -469,32 +493,32 @@ document.addEventListener('DOMContentLoaded', async () => {
             const partId = event.target.dataset.id;
             const part = parts.find(p => p._id === partId);
             if (part) {
-                document.getElementById('part-id').value = part._id;
-                document.getElementById('part-name').value = part.name;
-                document.getElementById('part-description').value = part.description;
-                document.getElementById('partModalLabel').textContent = 'Edit Part';
+                partIdInput.value = part._id;
+                partNameInput.value = part.name;
+                partDescriptionInput.value = part.description;
+                partModalLabel.textContent = 'Edit Part';
                 new bootstrap.Modal(document.getElementById('partModal')).show();
             }
         } else if (event.target.classList.contains('add-option')) {
             const partId = event.target.dataset.id;
-            document.getElementById('part-option-id').value = '';
-            document.getElementById('part-option-part').value = partId;
-            document.getElementById('part-option-form').reset();
-            document.getElementById('partOptionModalLabel').textContent = 'Add Part Option';
-            document.getElementById('deletePartOptionBtn').style.display = 'none';
+            partOptionIdInput.value = '';
+            partOptionPartInput.value = partId;
+            partOptionForm.reset();
+            partOptionModalLabel.textContent = 'Add Part Option';
+            deletePartOptionBtn.style.display = 'none';
             new bootstrap.Modal(document.getElementById('partOptionModal')).show();
         } else if (event.target.classList.contains('edit-option')) {
             const optionId = event.target.dataset.id;
             const part = parts.find(p => p.options.some(o => o._id === optionId));
             const option = part.options.find(o => o._id === optionId);
             if (option) {
-                document.getElementById('part-option-id').value = option._id;
-                document.getElementById('part-option-part').value = part._id;
-                document.getElementById('part-option-name').value = option.name;
-                document.getElementById('part-option-description').value = option.description;
-                document.getElementById('part-option-cost').value = option.cost;
-                document.getElementById('partOptionModalLabel').textContent = 'Edit Part Option';
-                document.getElementById('deletePartOptionBtn').style.display = 'block';
+                partOptionIdInput.value = option._id;
+                partOptionPartInput.value = part._id;
+                partOptionNameInput.value = option.name;
+                partOptionDescriptionInput.value = option.description;
+                partOptionCostInput.value = option.cost;
+                partOptionModalLabel.textContent = 'Edit Part Option';
+                deletePartOptionBtn.style.display = 'block';
                 new bootstrap.Modal(document.getElementById('partOptionModal')).show();
             }
         }
@@ -503,10 +527,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     productForm.addEventListener('submit', async (event) => {
         event.preventDefault();
 
-        const id = document.getElementById('product-id').value;
-        const name = document.getElementById('product-name').value;
-        const description = document.getElementById('product-description').value;
-        const available = document.getElementById('product-available').checked;
+        const id = productIdInput.value;
+        const name = productNameInput.value;
+        const description = productDescriptionInput.value;
+        const available = productAvailableCheckbox.checked;
 
         let response;
         if (id) {
@@ -533,14 +557,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         productForm.reset();
         await fetchProducts();
         updateNavbarSelection(selectedProductId);
-        document.getElementById('selected-product-availability').textContent = available ? 'Available' : 'Unavailable';
+        selectedProductAvailability.textContent = available ? 'Available' : 'Unavailable';
         
         await fetchParts();
         await fetchCombinationRules();
         await fetchPriceRules();
 
-        document.getElementById('editProductBtn').style.display = 'block';
-        document.getElementById('editProductBtn').disabled = false;
+        editProductBtn.style.display = 'block';
+        editProductBtn.disabled = false;
         managePartsSection.classList.remove('d-none');
         manageCombinationRulesSection.classList.remove('d-none');
         managePriceRulesSection.classList.remove('d-none');
@@ -549,22 +573,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     document.getElementById('addCombinationRuleBtn').addEventListener('click', () => {
-        document.getElementById('combination-rule-id').value = '';
-        document.getElementById('combinationRuleModalLabel').textContent = 'Add Combination Rule';
-        document.getElementById('combination-rule-form').reset();
-        document.getElementById('deleteCombinationRuleBtn').style.display = 'none';
+        combinationRuleIdInput.value = '';
+        combinationRuleModalLabel.textContent = 'Add Combination Rule';
+        combinationRuleForm.reset();
+        deleteCombinationRuleBtn.style.display = 'none';
         new bootstrap.Modal(document.getElementById('combinationRuleModal')).show();
     });
 
     document.getElementById('addPriceRuleBtn').addEventListener('click', () => {
-        document.getElementById('price-rule-id').value = '';
-        document.getElementById('priceRuleModalLabel').textContent = 'Add Price Rule';
-        document.getElementById('price-rule-form').reset();
-        document.getElementById('deletePriceRuleBtn').style.display = 'none';
+        priceRuleIdInput.value = '';
+        priceRuleModalLabel.textContent = 'Add Price Rule';
+        priceRuleForm.reset();
+        deletePriceRuleBtn.style.display = 'none';
         new bootstrap.Modal(document.getElementById('priceRuleModal')).show();
     });
 
-    document.getElementById('combination-rules-list').addEventListener('click', (event) => {
+    combinationRulesList.addEventListener('click', (event) => {
         if (event.target.classList.contains('edit-combination-rule')) {
             const id = event.target.dataset.id;
             const partOptions = event.target.dataset.partOptions;
@@ -573,7 +597,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    document.getElementById('price-rules-list').addEventListener('click', (event) => {
+    priceRulesList.addEventListener('click', (event) => {
         if (event.target.classList.contains('edit-price-rule')) {
             const id = event.target.dataset.id;
             const partOptions = event.target.dataset.partOptions;
@@ -582,8 +606,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    document.getElementById('deleteProductBtn').addEventListener('click', async () => {
-        const id = document.getElementById('product-id').value;
+    deleteProductBtn.addEventListener('click', async () => {
+        const id = productIdInput.value;
         await deleteProduct(id);
         bootstrap.Modal.getInstance(document.getElementById('productModal')).hide();
         location.reload();
